@@ -17,8 +17,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 # 复制应用代码
 COPY . .
 
-# 暴露端口
+# 暴露端口（默认 8000，Zeabur 会使用 PORT 环境变量覆盖）
 EXPOSE 8000
 
-# 启动命令
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+# 启动命令（从 PORT 环境变量读取端口，默认 8000）
+CMD uvicorn main:app --host 0.0.0.0 --port ${PORT:-8000}

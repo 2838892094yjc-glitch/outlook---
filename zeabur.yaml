@@ -1,0 +1,38 @@
+# Zeabur 部署配置
+version: "3"
+
+services:
+  app:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      # 基础配置
+      - APP_NAME=${APP_NAME:-Outlook Web Tool}
+      - DEBUG=${DEBUG:-false}
+      - SECRET_KEY=${SECRET_KEY}
+      - ENCRYPTION_KEY=${ENCRYPTION_KEY}
+      
+      # 数据库（Zeabur PostgreSQL 自动提供）
+      - DATABASE_URL=${DATABASE_URL}
+      
+      # Redis（Zeabur Redis 自动提供）
+      - REDIS_URL=${REDIS_URL}
+      
+      # Microsoft OAuth
+      - MICROSOFT_CLIENT_ID=${MICROSOFT_CLIENT_ID}
+      - MICROSOFT_CLIENT_SECRET=${MICROSOFT_CLIENT_SECRET}
+      - MICROSOFT_REDIRECT_URI=${MICROSOFT_REDIRECT_URI}
+      - MICROSOFT_TENANT_ID=${MICROSOFT_TENANT_ID:-common}
+      
+      # AI 服务
+      - AI_API_URL=${AI_API_URL}
+      - AI_API_KEY=${AI_API_KEY}
+      - AI_MODEL=${AI_MODEL:-gpt-4}
+      
+      # SMTP
+      - SMTP_HOST=${SMTP_HOST}
+      - SMTP_PORT=${SMTP_PORT:-587}
+      - SMTP_USER=${SMTP_USER}
+      - SMTP_PASSWORD=${SMTP_PASSWORD}
+      - SMTP_USE_TLS=${SMTP_USE_TLS:-true}

@@ -1,4 +1,4 @@
-# Outlook Web Tool
+# Outlook邮箱每日总结推送-港校必备
 
 基于 FastAPI 的 Outlook 邮件自动处理工具，部署于 Zeabur。
 

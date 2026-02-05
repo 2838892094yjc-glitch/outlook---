@@ -40,9 +40,23 @@ app.include_router(api.router, prefix="/api", tags=["API"])
 @app.on_event("startup")
 async def startup_event():
     """应用启动时初始化数据库"""
-    init_db()
-    print(f"🚀 {settings.APP_NAME} 启动成功！")
-    print(f"📊 数据库: {settings.DATABASE_URL[:30]}...")
+    import time
+    max_retries = 3
+    retry_delay = 2
+
+    for attempt in range(max_retries):
+        try:
+            init_db()
+            print(f"🚀 {settings.APP_NAME} 启动成功！")
+            print(f"📊 数据库: {settings.DATABASE_URL[:30]}...")
+            break
+        except Exception as e:
+            if attempt < max_retries - 1:
+                print(f"⚠️ 数据库连接失败 (尝试 {attempt + 1}/{max_retries}): {str(e)[:100]}")
+                time.sleep(retry_delay)
+            else:
+                print(f"❌ 数据库连接失败: {str(e)[:200]}")
+                raise
 
 
 @app.get("/", response_class=HTMLResponse)

@@ -65,15 +65,38 @@ async def callback(
         access_token = token_data.get("access_token")
         refresh_token = token_data.get("refresh_token")
         expires_at = token_data.get("expires_at")
+        id_token = token_data.get("id_token", "")
 
-        # 获取用户信息
+        # 获取用户信息（可能失败）
         user_info = await MicrosoftAuthService.get_user_info(access_token)
 
+        # 尝试从 user_info 获取邮箱，失败则从 ID token 提取
         email = user_info.get("mail") or user_info.get("userPrincipalName")
         name = user_info.get("displayName", "")
 
+        # 如果无法从 Graph API 获取，尝试从 ID token 解析
+        if not email and id_token:
+            try:
+                import json
+                import base64
+                # ID token 格式: header.payload.signature
+                parts = id_token.split(".")
+                if len(parts) >= 2:
+                    # 解码 payload（第二部分）
+                    payload = parts[1]
+                    # 补充 padding
+                    padding = 4 - len(payload) % 4
+                    if padding != 4:
+                        payload += "=" * padding
+                    decoded = base64.urlsafe_b64decode(payload)
+                    claims = json.loads(decoded)
+                    email = claims.get("upn") or claims.get("email")
+                    name = claims.get("name", "")
+            except Exception as e:
+                print(f"无法从 ID token 提取用户信息: {str(e)[:100]}")
+
         if not email:
-            raise HTTPException(status_code=400, detail="无法获取用户邮箱")
+            raise HTTPException(status_code=400, detail="无法获取用户邮箱，请确保在 Azure Portal 中已 Grant admin consent User.Read 权限")
 
         # 检查用户是否已存在
         user = db.query(User).filter(User.email == email).first()

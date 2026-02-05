@@ -20,6 +20,7 @@ class MicrosoftAuthService:
         "offline_access",  # 用于获取 refresh_token
         "Mail.Read",
         "Mail.ReadBasic",
+        "User.Read",  # 读取用户信息（邮箱、名字等）
     ]
 
     @classmethod
@@ -85,12 +86,17 @@ class MicrosoftAuthService:
 
     @classmethod
     async def get_user_info(cls, access_token: str) -> Dict[str, Any]:
-        """获取用户信息"""
-        async with httpx.AsyncClient() as client:
-            headers = {"Authorization": f"Bearer {access_token}"}
-            response = await client.get(f"{cls.GRAPH_API_BASE}/me", headers=headers)
-            response.raise_for_status()
-            return response.json()
+        """获取用户信息，失败时返回空字典"""
+        try:
+            async with httpx.AsyncClient(timeout=10) as client:
+                headers = {"Authorization": f"Bearer {access_token}"}
+                response = await client.get(f"{cls.GRAPH_API_BASE}/me", headers=headers)
+                response.raise_for_status()
+                return response.json()
+        except Exception as e:
+            print(f"警告: 获取用户信息失败: {str(e)[:100]}")
+            # 如果获取失败，返回空字典，caller 可以使用 UPN 作为备选
+            return {}
 
 
 class OutlookService:
